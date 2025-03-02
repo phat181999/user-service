@@ -10,16 +10,20 @@ export class UserRepository {
     private readonly userRepo: Repository<UserEntity>,
   ) {}
 
-  async createUser(userName: string, email: string, password: string): Promise<any> {
-    const user = this.userRepo.create({ userName, email, password });
+  async createUser(userName: string, email: string, password: string): Promise<UserEntity> {
+    const user = await this.userRepo.create({ userName, email, password });
     return this.userRepo.save(user);
   }
 
   async findAll(): Promise<any> {
-    return this.userRepo.find();
+    return await this.userRepo.find();
   }
 
-  async findById(userId: number): Promise<any> {
-    return this.userRepo.findOne({ where: { userId } });
+  async findById(userId: string): Promise<any> {
+    return await this.userRepo.findOne({ where: { userId } });
+  }
+
+  async findByEmail(email: string): Promise<any> {
+    return await this.userRepo.findOne({ where: { email } });
   }
 }
