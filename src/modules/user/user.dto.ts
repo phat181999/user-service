@@ -5,7 +5,6 @@ export class CreateUserDTO {
     @IsString()
     @MinLength(4)
     @MaxLength(100)
-    @Validate(IsUnique, ['users', 'userName'])
     userName: string;
 
     @IsString()
@@ -13,6 +12,6 @@ export class CreateUserDTO {
     password: string;
 
     @IsString()
-    // @IsUnique(UserEntity, "email", { message: "Email must be unique" })
+    @Validate(IsUnique, ['users', 'email'])
     email: string;
 }
