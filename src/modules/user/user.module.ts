@@ -1,11 +1,12 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserEntity } from './user.entity';
-import { UserController } from './user.controller';
-import { UserService } from './user.service';
-import { UserRepository } from './user.repository';
+import { UserEntity } from './entity/user.entity';
+
+import { UserRepository } from './repository/user.repository';
 import { IsUnique } from 'src/common/validators/isUniqueConstraint';
 import { HashPassword } from 'src/utils/hashPassword';
+import { UserController } from './controller/user.controller';
+import { UserService } from './service/user.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([UserEntity])],
