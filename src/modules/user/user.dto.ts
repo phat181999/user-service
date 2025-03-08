@@ -1,5 +1,4 @@
 import { IsString, MaxLength, MinLength, Validate } from "class-validator";
-import { UserEntity } from "./user.entity";
 import { IsUnique } from "src/common/validators/isUniqueConstraint";
 
 export class CreateUserDTO {
