@@ -7,7 +7,6 @@ export class UserEntity {
     userId: string;
 
     @Column({
-        unique: true,
         nullable: false
     })
     userName: string;
