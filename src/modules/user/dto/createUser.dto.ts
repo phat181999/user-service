@@ -14,4 +14,8 @@ export class CreateUserDTO {
     @IsString()
     @Validate(IsUnique, ['users', 'email'])
     email: string;
+
+    createdAt: Date;
+    updatedAt: Date;
+    deletedAt: Date;
 }
