@@ -27,4 +27,18 @@ export class HashPassword {
             
         }
     }
+
+    async comparePassword(password: string, passwordHashed: string): Promise<boolean> {
+        if (!password || !passwordHashed) {
+            this.logger.error('Password and PasswordHashed are required');
+            throw new Error('Password and PasswordHashed are required');
+        }
+
+        try {
+            return await bcrypt.compare(password, passwordHashed);
+        } catch (err) {
+            this.logger.error(`Error comparing password: ${err.message}`);
+            throw new Error(`Error comparing password: ${err.message}`);
+        }
+    }
 }

@@ -2,7 +2,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { UserRepository } from '../repository/user.repository';
 import {HashPassword} from '../../../utils/hashPassword';
 import { CreateUserDTO } from '../dto/createUser.dto';
-import { UserEntity } from '../entity/user.entity';
+import { GetUser } from '../dto/getUser.dto';
+import { GetUserLogin, LoginUserDto } from '../../auth/dto/loginUser.dto';
 
 @Injectable()
 export class UserService {
@@ -22,28 +23,85 @@ export class UserService {
         throw new Error('Username, Email and Password are required')
       }
       const hashedPassword = await this.HashPassword.hashPassword(password);
-      return await this.userRepository.createUser(userName, email, hashedPassword);
+      const userCreate = {...createUserDto, password: hashedPassword};
+      return await this.userRepository.createUser(userCreate);
     }catch(error){
       this.logger.error(`Error creating user: ${error.message}`);
       throw new Error(`Error creating user: ${error.message}`);
     }
   }
 
-  async getUsers(): Promise<UserEntity[]> {
+  async getUsers(): Promise<GetUser[]> {
     try{
       const users = await this.userRepository.findAll();
       return users;
     }catch(error){
       this.logger.error(`Error getting all users: ${error.message}`);
-      return error;
+      throw new Error(`Error creating user: ${error.message}`);
     }
   }
 
-  async getUserById(userId: string) {
-    return this.userRepository.findById(userId);
+  async getUserById(userId: string): Promise<GetUser | null> {
+    try{
+      if(!userId) {
+        this.logger.error('userId is required');
+        throw new Error('userId is required');
+      }
+      const user = await this.userRepository.findById(userId);
+      if(!user){
+        this.logger.error('User not found');
+        return null;
+      }
+      return user;
+    }catch(error){
+      this.logger.error(`Error getting user by id: ${error.message}`);
+      throw new Error(`Error creating user: ${error.message}`);
+    }
   }
 
-  async getUserByEmail(email: string) {
-    return this.userRepository.findByEmail(email);
+  async getUserByEmail(email: string): Promise<GetUser | null> {
+    try{
+      if(!email) {
+        this.logger.error('Email is required');
+        throw new Error('Email is required');
+      }
+      const user = await this.userRepository.findByEmail(email);
+      return user;
+    }catch(error){
+      this.logger.error(`Error getting user by email: ${error.message}`);
+      throw new Error(`Error creating user: ${error.message}`);
+    }
   }
+
+  async updateUser(userId: string, userCreate: Partial<CreateUserDTO>): Promise<CreateUserDTO> {
+    try{
+      const userUpdate = await this.userRepository.updateUserById(userId, userCreate);
+      if(!userUpdate){
+        this.logger.error('User not found');
+        throw new Error('User not found');
+      }
+      return userUpdate;
+    }catch(error){
+      this.logger.error(`Error updating user: ${error.message}`);
+      throw new Error(`Error updating user: ${error.message}`);
+    }
+  }
+
+  async deleteUser(userId: string): Promise<boolean> {
+    try{
+      const user = await this.userRepository.findById(userId);
+      if(!user){
+        this.logger.error('User not found');
+        throw new Error('User not found');
+      }
+      await this.userRepository.deleteUserById(userId);
+      return true;
+    }catch(error){
+      this.logger.error(`Error deleting user: ${error.message}`);
+      throw new Error(`Error deleting user: ${error.message}`);
+    }
+  }
+
+  
+    
 }
