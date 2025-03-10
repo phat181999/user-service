@@ -8,11 +8,22 @@ import { HashPassword } from 'src/utils/hashPassword';
 import { UserController } from './controller/user.controller';
 import { UserService } from './service/user.service';
 import { AuthModule } from '../auth/auth.module';
+import { AuthGuard } from 'src/common/guards/auth.guard';
+import { RoleGuard } from 'src/common/guards/role.guard';
+import { AccessControlService } from 'src/shared/service/accessControl.service';
 
 @Module({
   imports: [forwardRef(() => AuthModule), TypeOrmModule.forFeature([UserEntity])],
   controllers: [UserController],
-  providers: [UserService, UserRepository, IsUnique, HashPassword], 
+  providers: [
+    UserService, 
+    UserRepository, 
+    IsUnique, 
+    HashPassword,
+    AuthGuard,
+    RoleGuard,
+    AccessControlService
+  ], 
   exports: [UserService, UserRepository], 
 })
 export class UsersModule {}

@@ -6,6 +6,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UsersModule } from './modules/user/user.module';
 import { typeOrmConfig } from './config/appConfig/dbConfig';
 import { AuthModule } from './modules/auth/auth.module';
+import { ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
@@ -18,6 +19,10 @@ import { AuthModule } from './modules/auth/auth.module';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => typeOrmConfig(configService),
     }),
+    // ThrottlerModule.forRoot({
+    //   ttl: 60, // Trong 60 giây
+    //   limit: 10, // Tối đa 10 request mỗi IP
+    // }),
     UsersModule,
     AuthModule
   ],

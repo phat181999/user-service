@@ -1,9 +1,12 @@
-import { Controller, Get, Post, Body, UsePipes, ValidationPipe, Param, Logger, Res, Put, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, UsePipes, ValidationPipe, Param, Logger, Res, Put, Delete, HttpStatus, HttpCode, UseGuards } from '@nestjs/common';
 import { UserService } from '../service/user.service';
 import { CreateUserDTO } from '../dto/createUser.dto';
 import { GetUser } from '../dto/getUser.dto';
 import { ApiTags } from '@nestjs/swagger';
-import { GetUserLogin } from '../../auth/dto/loginUser.dto';
+import { AuthGuard } from 'src/common/guards/auth.guard';
+import { Roles } from 'src/utils/roleDecorator';
+import { RoleGuard } from 'src/common/guards/role.guard';
+import { UserRole } from 'src/shared/interface/user.interface';
 
 @ApiTags('users')
 @Controller('users')
@@ -13,6 +16,7 @@ export class UserController {
     this.logger = new Logger(UserController.name);
   }
 
+  @HttpCode(HttpStatus.CREATED)
   @Post()
   @UsePipes(new ValidationPipe())
   async createUser(@Body() createUserDto: CreateUserDTO): Promise<CreateUserDTO> {
@@ -27,6 +31,9 @@ export class UserController {
     }
   }
 
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthGuard, RoleGuard)
+  @Roles(UserRole.ADMIN)
   @Get('all')
   async getUsers(): Promise<GetUser[]> {
     try{
@@ -40,6 +47,8 @@ export class UserController {
     }
   }
 
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthGuard)
   @Get(':id')
   async getUserById(@Param('id') userId: string): Promise<GetUser | null> {
     try{
@@ -53,6 +62,8 @@ export class UserController {
     }
   }
 
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthGuard)
   @Get('email/:email') 
   async getUserByEmail(@Param('email') email: string): Promise<GetUser | null> {
     try{
@@ -66,6 +77,9 @@ export class UserController {
     }
   }
 
+  @HttpCode(HttpStatus.OK)
+  // @Roles('admin')
+  @UseGuards(AuthGuard)
   @Put(':id')
   async updateUser(@Param('id') userId: string, @Body() createUserDto: Partial<CreateUserDTO>): Promise<CreateUserDTO> {
     try{
