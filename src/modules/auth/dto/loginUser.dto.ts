@@ -8,8 +8,9 @@ export class LoginUserDto {
 }
 
 export class GetUserLogin {
-    email: string;
-    userName: string;
-    role: string;
-    createdAt: Date;
+    access_token: string;
+    refreshToken: string;
+    refresh_expires_in: number;
+    expires_in: number;
+    // role: string;
 }

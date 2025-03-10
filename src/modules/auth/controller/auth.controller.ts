@@ -1,6 +1,7 @@
-import { Body, Controller, Logger, Post } from "@nestjs/common";
+import { Body, Controller, HttpCode, HttpStatus, Logger, Post, UseGuards } from "@nestjs/common";
 import { GetUserLogin, LoginUserDto } from "../dto/loginUser.dto";
 import { AuthService } from "../service/auth.service";
+import { AuthGuard } from "src/common/guards/auth.guard";
 
 @Controller('auth')
 export class AuthController {
@@ -11,6 +12,7 @@ export class AuthController {
         this.logger = new Logger(AuthController.name);
     }
 
+    @HttpCode(HttpStatus.OK)
     @Post('login')
     async login(@Body() loginUserDto: LoginUserDto): Promise<GetUserLogin> {
         try {
