@@ -3,7 +3,6 @@ import { UserRepository } from '../repository/user.repository';
 import {HashPassword} from '../../../utils/hashPassword';
 import { CreateUserDTO } from '../dto/createUser.dto';
 import { GetUser } from '../dto/getUser.dto';
-import { GetUserLogin, LoginUserDto } from '../../auth/dto/loginUser.dto';
 
 @Injectable()
 export class UserService {

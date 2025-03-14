@@ -1,5 +1,5 @@
 import {Injectable} from "@nestjs/common";
-import { UserRole } from "../interface/user.interface";
+import { UserRole } from "../interface";
 
 interface IsAuthorizedParams {
   currentRole: UserRole;
