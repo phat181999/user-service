@@ -7,8 +7,8 @@ import {
   } from '@nestjs/common';
   import { Reflector } from '@nestjs/core';
   import { JwtService } from '@nestjs/jwt';
-  import { UserRole } from 'src/shared/interface/user.interface';
-import { ROLE_KEY } from 'src/common/decorators/role.decorator';
+  import { UserRole } from '../../shared/interface';
+  import { ROLE_KEY } from '../decorators/index';
   
   @Injectable()
   export class RoleGuard implements CanActivate {
