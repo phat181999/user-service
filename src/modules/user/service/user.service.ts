@@ -1,18 +1,43 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { UserRepository } from '../repository/user.repository';
 import {HashPassword} from '../../../utils/hashPassword';
 import { CreateUserDTO } from '../dto/createUser.dto';
 import { GetUser } from '../dto/getUser.dto';
 import { GetUserLogin, LoginUserDto } from '../../auth/dto/loginUser.dto';
+import { Consumer, Kafka } from 'kafkajs';
 
 @Injectable()
-export class UserService {
+export class UserService implements OnModuleInit, OnModuleDestroy{
   private logger: Logger;
+  private kafka = new Kafka({ brokers: ['localhost:9092'] });
+  private consumer: Consumer;
+  
   constructor(
     private readonly userRepository: UserRepository,
     private readonly HashPassword: HashPassword,
   ) {
     this.logger = new Logger(UserService.name);
+    this.consumer = this.kafka.consumer({ groupId: 'user-service-group' });
+  }
+  async onModuleInit() {
+    await this.consumer.connect();
+    await this.consumer.subscribe({ topic: 'check-user-exists', fromBeginning: false });
+
+    await this.consumer.run({
+      eachMessage: async ({ message }) => {
+        const { userId } = JSON.parse(message.value?.toString() || '{}');
+        console.log(`🔍 Checking user existence: ${userId}`);
+
+        // Giả sử kiểm tra user có tồn tại không (Dùng DB thực tế ở đây)
+        const userExists = await this.getUserById(userId);
+
+        if (userExists) {
+          console.log(`✅ User ${userId} exists!`);
+        } else {
+          console.log(`❌ User ${userId} does not exist!`);
+        }
+      },
+    });
   }
 
   async createUser(createUserDto: CreateUserDTO): Promise<CreateUserDTO> {
@@ -102,6 +127,8 @@ export class UserService {
     }
   }
 
-  
+  async onModuleDestroy() {
+    await this.consumer.disconnect();
+  }
     
 }
