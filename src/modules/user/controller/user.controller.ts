@@ -10,7 +10,7 @@ import { UserRole } from 'src/shared/interface/user.interface';
 import { CacheInterceptor } from 'src/common/interceptors/cache.interceptor';
 
 @ApiTags('users')
-@UseInterceptors(CacheInterceptor)
+// @UseInterceptors(CacheInterceptor)
 @Controller('users')
 export class UserController {
   private logger: Logger;

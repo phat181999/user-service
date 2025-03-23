@@ -11,6 +11,7 @@ import { AuthModule } from '../auth/auth.module';
 import { AuthGuard } from 'src/common/guards/auth.guard';
 import { RoleGuard } from 'src/common/guards/role.guard';
 import { AccessControlService } from 'src/shared/service/accessControl.service';
+import { KafkaService } from './service/kafka.service';
 
 @Module({
   imports: [forwardRef(() => AuthModule), TypeOrmModule.forFeature([UserEntity])],
@@ -22,8 +23,12 @@ import { AccessControlService } from 'src/shared/service/accessControl.service';
     HashPassword,
     AuthGuard,
     RoleGuard,
-    AccessControlService
+    AccessControlService,
+    
   ], 
-  exports: [UserService, UserRepository], 
+  exports: [
+    UserService, 
+    UserRepository, 
+  ], 
 })
 export class UsersModule {}
