@@ -1,9 +1,9 @@
-import { Injectable, Logger, OnModuleInit } from "@nestjs/common";
+import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from "@nestjs/common";
 import { Kafka, Consumer, Producer } from "kafkajs";
 import { UserService } from "./user.service";
 
 @Injectable()
-export class KafkaService implements OnModuleInit {
+export class KafkaService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(KafkaService.name);
   private consumer: Consumer;
   private producer: Producer;
@@ -24,6 +24,11 @@ export class KafkaService implements OnModuleInit {
     await this.consumeMessages();
   }
 
+  async onModuleDestroy() {
+    await this.disconnectConsumer();
+    await this.disconnectProducer();
+  }
+
   /**
    * Consumes messages from Kafka topic.
    */
@@ -41,39 +46,38 @@ export class KafkaService implements OnModuleInit {
   /**
    * Processes incoming Kafka messages.
    */
-    private async processMessage(value: string) {
-      try {
-        if (!value) {
-          this.logger.error("❌ Invalid message payload:", value);
-          throw new Error("Invalid message payload");
-        }
-    
-        // Parse JSON từ message value
-        const parsedMessage = JSON.parse(value);
-        const userId = parsedMessage.userId; // Lấy userId từ JSON
-    
-        if (!userId) {
-          this.logger.error("❌ userId is missing in message:", value);
-          throw new Error("Invalid message structure: userId is required");
-        }
-    
-        this.logger.log(`🔍 Checking user existence: userId=${userId}`);
-    
-        const userExists = await this.userService.getUserById(userId);
-    
-        const result = {
-          userId,
-          userExists: !!userExists,
-        };
-    
-        this.logger.log(`📩 Sending response:`, result);
-    
-        await this.sendResponse("user-exists-response", result);
-      } catch (error) {
-        this.logger.error("❌ Error processing message:", error);
+  private async processMessage(value: string) {
+    try {
+      if (!value) {
+        this.logger.error("❌ Invalid message payload:", value);
+        throw new Error("Invalid message payload");
       }
+
+      // Parse JSON from message value
+      const parsedMessage = JSON.parse(value);
+      const userId = parsedMessage.userId; // Get userId from JSON
+
+      if (!userId) {
+        this.logger.error("❌ userId is missing in message:", value);
+        throw new Error("Invalid message structure: userId is required");
+      }
+
+      this.logger.log(`🔍 Checking user existence: userId=${userId}`);
+
+      const userExists = await this.userService.getUserById(userId);
+
+      const result = {
+        userId,
+        userExists: !!userExists,
+      };
+
+      this.logger.log(`📩 Sending response:`, result);
+
+      await this.sendResponse("user-exists-response", result);
+    } catch (error) {
+      this.logger.error("❌ Error processing message:", error);
     }
-  
+  }
 
   /**
    * Sends a message to a Kafka topic.
@@ -83,5 +87,19 @@ export class KafkaService implements OnModuleInit {
       topic,
       messages: [{ value: JSON.stringify(data) }],
     });
+  }
+
+  /**
+   * Disconnects the consumer.
+   */
+  private async disconnectConsumer() {
+    await this.consumer.disconnect();
+  }
+
+  /**
+   * Disconnects the producer.
+   */
+  private async disconnectProducer() {
+    await this.producer.disconnect();
   }
 }
