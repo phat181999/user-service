@@ -14,19 +14,6 @@ async function bootstrap() {
       prefix: 'NestJS',
     }),
   });
-
-  app.connectMicroservice<MicroserviceOptions>({
-    transport: Transport.KAFKA,
-    options: {
-      client: {
-        brokers: ['localhost:9092'],
-      },
-      consumer: {
-        groupId: 'user-service-group',
-      },
-    },
-  });
-
   const config = new DocumentBuilder()
   .setTitle('User Service')
   .setDescription('The User Service API description')
@@ -36,6 +23,19 @@ async function bootstrap() {
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/documentation', app, documentFactory);
 
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.KAFKA,
+    options: {
+      client: {
+        brokers: [process.env.KAFKA_BROKER ?? 'localhost:9092'],
+      },
+      consumer: {
+        groupId: 'user-app-service-group',
+      },
+    },
+  });
+
+  await app.startAllMicroservices(); // ✅ Chạy Kafka Consumer
 
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
   app.setGlobalPrefix('api');
