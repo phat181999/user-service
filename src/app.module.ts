@@ -8,6 +8,7 @@ import { typeOrmConfig } from './config/appConfig/dbConfig';
 import { AuthModule } from './modules/auth/auth.module';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { KafkaModule } from './modules/kafka/kafka.module';
+import { TcpModule } from './modules/tcp/tcp.module';
 
 @Module({
   imports: [
@@ -22,7 +23,8 @@ import { KafkaModule } from './modules/kafka/kafka.module';
     }),
     UsersModule,
     AuthModule,
-    KafkaModule
+    // KafkaModule,
+    TcpModule
   ],
   controllers: [AppController],
   providers: [AppService, ],
