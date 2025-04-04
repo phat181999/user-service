@@ -7,16 +7,28 @@ import { UserService } from "src/modules/user/service/user.service";
 @Injectable()
 export class KafkaProducerService {
     constructor(
-        private readonly userService: UserService
+        private readonly userService: UserService,
+        @Inject("KAFKA_SERVICE") private readonly kafkaClient: ClientKafka
     ) {}
     
-    async handleVerifyUser(user: VerifyUserMessage): Promise<boolean | null> {
+    async handleVerifyUser(user: VerifyUserMessage): Promise<void> {
         try{
             const userExists = await this.userService.getUserById(user.receiver);
-            console.log(`User exists: ${userExists}`);
-            return userExists ? true : false;
+            if (!userExists) {
+                throw new HttpException("User not found", HttpStatus.NOT_FOUND);
+            }
+            const checkedUser = await userExists ? true : false;
+            this.kafkaClient.emit("verify-user", checkedUser);
         }catch(error) {
             throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    async sendMessages(topic, data) {
+        try {
+            await this.kafkaClient.emit(topic, data)
+        }catch(error) {
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }         

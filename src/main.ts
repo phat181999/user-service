@@ -22,20 +22,13 @@ async function bootstrap() {
   .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/documentation', app, documentFactory);
-
-  app.connectMicroservice<MicroserviceOptions>({
-    transport: Transport.KAFKA,
-    options: {
-      client: {
-        brokers: [process.env.KAFKA_BROKER ?? 'localhost:9092'],
-      },
-      consumer: {
-        groupId: 'user-app-service-group',
-      },
-    },
+  
+  const microservice = await NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
+    transport: Transport.TCP,
+    options: { host: 'localhost', port: 5000 }, // 👈 Đảm bảo đúng cổng
   });
 
-  await app.startAllMicroservices(); // ✅ Chạy Kafka Consumer
+  microservice.listen();
 
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
   app.setGlobalPrefix('api');
