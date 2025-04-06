@@ -3,11 +3,10 @@ import { UserService } from '../service/user.service';
 import { CreateUserDTO } from '../dto/createUser.dto';
 import { GetUser } from '../dto/getUser.dto';
 import { ApiTags } from '@nestjs/swagger';
-import { AuthGuard } from 'src/common/guards/auth.guard';
-import { Roles } from 'src/common/decorators/role.decorator';
-import { RoleGuard } from 'src/common/guards/role.guard';
-import { UserRole } from 'src/shared/interface/user.interface';
-import { CacheInterceptor } from 'src/common/interceptors/cache.interceptor';
+import { Roles } from '../../../common/decorators';
+import { RoleGuard, AuthGuard } from '../../../common/guards';
+import { UserRole } from '../../../shared/interface';
+import { CacheInterceptor } from '../../../common/interceptors';
 
 @ApiTags('users')
 // @UseInterceptors(CacheInterceptor)

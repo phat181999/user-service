@@ -1,5 +1,4 @@
-import { IsUnique } from "src/common/validators/isUniqueConstraint";
-import { UserRole } from "src/shared/interface/user.interface";
+import { UserRole } from "../../../shared/interface";
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { ApiProperty } from '@nestjs/swagger';
 

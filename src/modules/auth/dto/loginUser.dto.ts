@@ -1,9 +1,10 @@
-import { IsString } from "class-validator";
+import { IsNotEmpty } from "class-validator";
 
 export class LoginUserDto {
-    @IsString()
+    @IsNotEmpty()
     password: string;
-    @IsString()
+
+    @IsNotEmpty()
     email: string;
 }
 
@@ -12,5 +13,4 @@ export class GetUserLogin {
     refreshToken: string;
     refresh_expires_in: number;
     expires_in: number;
-    // role: string;
 }

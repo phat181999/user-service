@@ -4,8 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from '../entity/user.entity';
 import { CreateUserDTO } from '../dto/createUser.dto';
 import { GetUser } from '../dto/getUser.dto';
-import { UserRole } from 'src/shared/interface/user.interface';
-import { LoginUserDto } from '../../auth/dto/loginUser.dto';
+import { UserRole } from '../../../shared/interface'
 
 @Injectable()
 export class UserRepository {
