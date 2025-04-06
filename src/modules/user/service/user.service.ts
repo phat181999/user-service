@@ -1,18 +1,22 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { UserRepository } from '../repository/user.repository';
 import {HashPassword} from '../../../utils/hashPassword';
 import { CreateUserDTO } from '../dto/createUser.dto';
 import { GetUser } from '../dto/getUser.dto';
+import { GetUserLogin, LoginUserDto } from '../../auth/dto/loginUser.dto';
+import { Consumer, Kafka } from 'kafkajs';
 
 @Injectable()
-export class UserService {
+export class UserService{
   private logger: Logger;
+  
   constructor(
     private readonly userRepository: UserRepository,
     private readonly HashPassword: HashPassword,
   ) {
     this.logger = new Logger(UserService.name);
   }
+
 
   async createUser(createUserDto: CreateUserDTO): Promise<CreateUserDTO> {
     try{
@@ -100,7 +104,4 @@ export class UserService {
       throw new Error(`Error deleting user: ${error.message}`);
     }
   }
-
-  
-    
 }
