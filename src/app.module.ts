@@ -6,6 +6,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UsersModule } from './modules/user/user.module';
 import { typeOrmConfig } from './config/appConfig/dbConfig';
 import { AuthModule } from './modules/auth/auth.module';
+import { ClientsModule, Transport } from '@nestjs/microservices';
+import { KafkaModule } from './modules/kafka/kafka.module';
+import { TcpModule } from './modules/tcp/tcp.module';
 
 @Module({
   imports: [
@@ -19,9 +22,12 @@ import { AuthModule } from './modules/auth/auth.module';
       useFactory: (configService: ConfigService) => typeOrmConfig(configService),
     }),
     UsersModule,
-    AuthModule
+    AuthModule,
+    // KafkaModule,
+    TcpModule
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, ],
+  exports:[]
 })
 export class AppModule {}

@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { useContainer } from 'class-validator';
 import { ConsoleLogger } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -13,7 +14,6 @@ async function bootstrap() {
       prefix: 'NestJS',
     }),
   });
-
   const config = new DocumentBuilder()
   .setTitle('User Service')
   .setDescription('The User Service API description')
@@ -22,7 +22,13 @@ async function bootstrap() {
   .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/documentation', app, documentFactory);
+  
+  const microservice = await NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
+    transport: Transport.TCP,
+    options: { host: 'localhost', port: 5000 }, // 👈 Đảm bảo đúng cổng
+  });
 
+  microservice.listen();
 
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
   app.setGlobalPrefix('api');
