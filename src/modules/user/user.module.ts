@@ -13,7 +13,10 @@ import { RoleGuard } from 'src/common/guards/role.guard';
 import { AccessControlService } from 'src/shared/service/accessControl.service';
 
 @Module({
-  imports: [forwardRef(() => AuthModule), TypeOrmModule.forFeature([UserEntity])],
+  imports: [
+    forwardRef(() => AuthModule), 
+    TypeOrmModule.forFeature([UserEntity]),
+  ],
   controllers: [UserController],
   providers: [
     UserService, 
@@ -22,8 +25,11 @@ import { AccessControlService } from 'src/shared/service/accessControl.service';
     HashPassword,
     AuthGuard,
     RoleGuard,
-    AccessControlService
+    AccessControlService,
   ], 
-  exports: [UserService, UserRepository], 
+  exports: [
+    UserService, 
+    UserRepository, 
+  ], 
 })
 export class UsersModule {}
