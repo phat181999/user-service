@@ -1,21 +1,23 @@
-# Use an official Node.js runtime as a parent image
-FROM node:20-alpine
+# Use full Node.js (not Alpine) to avoid missing modules like crypto
+FROM node:20
 
-# Set the working directory inside the container
+# Set working directory
 WORKDIR /usr/src/app
 
-# Copy package.json and package-lock.json (if available)
+# Copy dependencies
 COPY package*.json ./
 
-# Install any needed packages
-RUN npm install -g @nestjs/cli
-RUN npm install --force
+# Install dependencies
+RUN npm install
 
-# Copy the rest of the application code
+# Copy source code
 COPY . .
+
+# Build project
 RUN npm run build
-# Expose the port the app runs on
+
+# Expose port
 EXPOSE 8080
 
-# Run the application
-CMD ["npm", "start:prod"]
+# Start app using the proper npm run syntax
+CMD ["npm", "run", "start:prod"]

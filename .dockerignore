@@ -1,0 +1,29 @@
+# Node modules (will be installed in container)
+node_modules
+
+# Build output
+dist
+
+# Logs
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Environment files (optional, if you don't want them in the image)
+.env
+.env.* 
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE settings
+.vscode
+.idea
+*.swp
+
+# Test coverage output
+coverage
+
+# Optional: Ignore Dockerfile backups or artifacts
+Dockerfile.*
