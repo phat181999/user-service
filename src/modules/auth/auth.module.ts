@@ -5,6 +5,9 @@ import { HashPassword } from "src/utils/hashPassword";
 import { UsersModule } from "../user/user.module";
 import { JwtModule } from "@nestjs/jwt";
 import { AuthGuard } from "src/common/guards/auth.guard";
+import { GoogleStrategy } from "./strategies/google.strategy";
+import { CloudinaryProvider } from "src/config/cloudinary/cloudinary.provider";
+import { GitHubStrategy } from "./strategies/github.strategy";
 
 
 @Module({
@@ -17,7 +20,13 @@ import { AuthGuard } from "src/common/guards/auth.guard";
           }),
     ],
     controllers: [AuthController],
-    providers: [AuthService, HashPassword], 
+    providers: [
+        AuthService, 
+        HashPassword, 
+        GoogleStrategy,
+        GitHubStrategy,
+        CloudinaryProvider
+    ], 
     exports: [AuthService],
 })
 

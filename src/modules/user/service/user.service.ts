@@ -1,7 +1,7 @@
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { UserRepository } from '../repository/user.repository';
 import {HashPassword} from '../../../utils/hashPassword';
-import { CreateUserDTO } from '../dto/createUser.dto';
+import { CreateUserDTO, createUserWithGoogle } from '../dto/createUser.dto';
 import { GetUser } from '../dto/getUser.dto';
 import { GetUserLogin, LoginUserDto } from '../../auth/dto/loginUser.dto';
 import { Consumer, Kafka } from 'kafkajs';
@@ -28,6 +28,21 @@ export class UserService{
       const hashedPassword = await this.HashPassword.hashPassword(password);
       const userCreate = {...createUserDto, password: hashedPassword};
       return await this.userRepository.createUser(userCreate);
+    }catch(error){
+      this.logger.error(`Error creating user: ${error.message}`);
+      throw new Error(`Error creating user: ${error.message}`);
+    }
+  }
+
+  async createUserWithGoogle(createUserDto: createUserWithGoogle): Promise<createUserWithGoogle> {
+    try{
+      const { email } = createUserDto;
+      console.log('createUserDto', createUserDto);
+      if( !email){
+        this.logger.error('Email are required');
+        throw new Error('Email are required')
+      }
+      return await this.userRepository.createUserWithGoogle(createUserDto);
     }catch(error){
       this.logger.error(`Error creating user: ${error.message}`);
       throw new Error(`Error creating user: ${error.message}`);

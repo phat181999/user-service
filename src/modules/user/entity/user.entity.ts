@@ -9,15 +9,16 @@ export class UserEntity {
     @PrimaryGeneratedColumn('uuid')
     userId: string;
 
-    @ApiProperty({ description: 'The username of the user' })
+    @ApiProperty({ description: 'The username of the user', uniqueItems: true })
     @Column({
-        nullable: false
+        nullable: false,
+        unique: true
     })
     userName: string;
 
     @ApiProperty({ description: 'The password of the user' })
     @Column({
-        nullable: false
+        nullable: true
     })
     password: string;
 
@@ -27,6 +28,12 @@ export class UserEntity {
         nullable: false
     })
     email: string;
+
+    @ApiProperty({ description: 'The image of the user' })
+    @Column({
+        nullable: true
+    })
+    image: string;
 
     @ApiProperty({ description: 'The role of the user', enum: UserRole, default: UserRole.USER })
     @Column({

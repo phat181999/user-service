@@ -1,9 +1,10 @@
-import { Body, Injectable, Logger, Post, UnauthorizedException } from "@nestjs/common";
+import { BadRequestException, Body, Injectable, Logger, Post, UnauthorizedException } from "@nestjs/common";
 import { GetUserLogin, LoginUserDto } from "src/modules/auth/dto/loginUser.dto";
 import { UserRepository } from "src/modules/user/repository/user.repository";
 import {HashPassword} from '../../../utils/hashPassword';
 import { InjectRepository } from "@nestjs/typeorm";
 import { JwtService } from "@nestjs/jwt";
+import { LoginGoogleDto } from "../dto/login-google.dto";
 
 @Injectable()
 export class AuthService {
@@ -42,8 +43,76 @@ export class AuthService {
           this.logger.error(`Error logging in user: ${error.message}`);
           throw new Error(`Error logging in user: ${error.message}`);
         }
-      }
+    }
     
+    async loginWithGoogle(user: LoginGoogleDto):Promise<any> {
+        try{
+            const {email} = user;
+            const userExists = await this.userRepository.findByEmail(email);
+            if(!userExists){
+                const newUser = await this.userRepository.createUserWithGoogle({
+                    ...user,
+                    userName: user.firstName,
+                    image: user.picture
+                });
+                return {
+                    ...newUser,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    picture: user.picture,
+                    accessToken: '',
+                    refreshToken: ''
+                };
+            }
+            return {
+                ...userExists,
+                accessToken: '',
+                refreshToken: ''
+            };
+        }catch(error){
+            this.logger.error(`Error logging in user: ${error.message}`);
+            throw new BadRequestException(`Error logging in user: ${error.message}`);
+        }
+    }
+
+    async loginWithGithub(user: any):Promise<any> {
+        try{
+            const {email, username} = user;
+            const userExists = await this.userRepository.findByEmail(email);
+
+            if(!userExists){
+                const newUser = await this.userRepository.createUserWithGithub({
+                    ...user,
+                    userName: user.firstName,
+                    image: user.avatar
+                });
+                return {
+                    newUser,
+
+                    accessToken: '',
+                    refreshToken: ''
+                };
+            }
+            return {
+                ...userExists,
+                accessToken: '',
+                refreshToken: ''
+            };
+        }catch(error){
+            this.logger.error(`Error logging in user: ${error.message}`);
+            throw new BadRequestException(`Error logging in user: ${error.message}`);
+        }
+    }
+
+    async checkUserExists(email: string): Promise<boolean> {
+        try {
+            const user = await this.userRepository.findByEmail(email);
+            return !!user;
+        }catch (error) {
+            this.logger.error(`Error checking user exists: ${error.message}`);
+            throw new BadRequestException(`Error checking user exists: ${error.message}`);
+        }
+    }
     async register() {
         return 'register';
     }

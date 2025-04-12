@@ -2,7 +2,7 @@ import { Repository } from 'typeorm';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from '../entity/user.entity';
-import { CreateUserDTO } from '../dto/createUser.dto';
+import { CreateUserDTO, createUserWithGoogle } from '../dto/createUser.dto';
 import { GetUser } from '../dto/getUser.dto';
 import { UserRole } from '../../../shared/interface'
 
@@ -18,9 +18,31 @@ export class UserRepository {
 
   async createUser(userCreate: CreateUserDTO): Promise<CreateUserDTO> {
     try{
-      const { userName, email, password, role } = userCreate;
-      const user = await this.userRepo.create({ userName, email, password, role: role ?? UserRole.USER });
-      return this.userRepo.save(user);
+      const { userName, email, password, role, image } = userCreate;
+      const user = await this.userRepo.create({ userName, email, password, role: role ?? UserRole.USER, image });
+      return await this.userRepo.save(user);
+    }catch(error){
+      this.logger.error(`Error creating user: ${error.message}`);
+      throw new Error(`Error creating user: ${error.message}`);
+    }
+  }
+
+  async createUserWithGoogle(userCreate: createUserWithGoogle): Promise<createUserWithGoogle> {
+    try{
+      const { userName, email, image } = userCreate;
+      const user = await this.userRepo.create({ userName, email, role: UserRole.USER, image });
+      return await this.userRepo.save(user);
+    }catch(error){
+      this.logger.error(`Error creating user: ${error.message}`);
+      throw new Error(`Error creating user: ${error.message}`);
+    }
+  }
+
+  async createUserWithGithub(userCreate: any): Promise<any> {
+    try{
+      const { userName, email, image } = userCreate;
+      const user = await this.userRepo.create({ userName, email, role: UserRole.USER, image });
+      return await this.userRepo.save(user);
     }catch(error){
       this.logger.error(`Error creating user: ${error.message}`);
       throw new Error(`Error creating user: ${error.message}`);
@@ -41,6 +63,17 @@ export class UserRepository {
     try{
       const user = await this.userRepo.findOne({ where: { userId } });
       return user;
+    }catch(error){
+      this.logger.error(`Error getting user by id: ${error.message}`);
+      throw new Error(`Error creating user: ${error.message}`);
+    }
+  }
+
+  async findByUserNameAndEmail(userName: string, email: string): Promise<any | null> {
+    try{
+      const users = await this.userRepo.find({ where: { userName, email } });
+      console.log(users, "")
+      return users
     }catch(error){
       this.logger.error(`Error getting user by id: ${error.message}`);
       throw new Error(`Error creating user: ${error.message}`);
