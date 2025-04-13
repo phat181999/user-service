@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, UsePipes, ValidationPipe, Param, Logger, Res, Put, Delete, HttpStatus, HttpCode, UseGuards, UseInterceptors, HttpException } from '@nestjs/common';
+import { Controller, Get, Post, Body, UsePipes, ValidationPipe, Param, Logger, Res, Put, Delete, HttpStatus, HttpCode, UseGuards, UseInterceptors, HttpException, UploadedFile } from '@nestjs/common';
 import { UserService } from '../service/user.service';
 import { CreateUserDTO } from '../dto/createUser.dto';
 import { GetUser } from '../dto/getUser.dto';
@@ -7,6 +7,8 @@ import { Roles } from '../../../common/decorators';
 import { RoleGuard, AuthGuard } from '../../../common/guards';
 import { UserRole } from '../../../shared/interface';
 import { CacheInterceptor } from '../../../common/interceptors';
+import { storage } from 'src/common/interceptors/cloudinary-storage';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 
 @ApiTags('users')
 // @UseInterceptors(CacheInterceptor)
@@ -20,12 +22,19 @@ export class UserController {
   @HttpCode(HttpStatus.CREATED)
   @Post()
   @UsePipes(new ValidationPipe())
+  @UseInterceptors(
+    FileInterceptor('file', { storage }),
+  )
   async createUser(
     @Body() createUserDto: CreateUserDTO,
+    @UploadedFile() file: Express.Multer.File,
     @Res() res
   ): Promise<CreateUserDTO | HttpException> {
     try {
       this.logger.log(`Creating User`);
+      if(file) {
+        createUserDto.image = file.path;
+      }
       const user = await this.userService.createUser(createUserDto);
       this.logger.log(`Created User`);
       return res.status(HttpStatus.CREATED).json({

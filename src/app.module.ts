@@ -13,7 +13,7 @@ import { TcpModule } from './modules/tcp/tcp.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath: '.env.development',
+      envFilePath: '.env.development.local',
       isGlobal: true,  
     }),
     TypeOrmModule.forRootAsync({
