@@ -199,5 +199,4 @@ export class AuthService {
     async resendEmailVerification() {
         return 'resendEmailVerification';
     }
-
 }
