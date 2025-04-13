@@ -71,4 +71,24 @@ export class AuthController {
         throw new BadRequestException(`Error logging in user: ${error.message}`);
       }
     }
+
+    @Post('refresh-token')
+    @HttpCode(HttpStatus.OK)
+    async refreshToken(@Body() body: { refreshToken: string, userId: string }) {
+        try {
+            this.logger.log(`Refreshing token`);
+            const { refreshToken, userId } = body;
+            const newTokens = await this.AuthService.refreshToken(refreshToken, userId);
+            this.logger.log(`Refreshed token`);
+            return newTokens;
+        } catch (error) {
+            this.logger.error(`Error refreshing token: ${error.message}`);
+            throw new BadRequestException(`Error refreshing token: ${error.message}`);
+        }
+    }
+
+    @Post('logout')
+    async logout(@Body() body: { userId: string }) {
+      return this.AuthService.logout(body.userId);
+    }
 }
