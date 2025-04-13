@@ -1,11 +1,13 @@
 import { PassportStrategy } from '@nestjs/passport';
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { Strategy } from 'passport-github2';
 import { ConfigService } from '@nestjs/config';
+import { Profile } from 'passport-github2';
+import { GitHubUser } from 'src/shared/interface/auth/auth.intergace';
 
 @Injectable()
 export class GitHubStrategy extends PassportStrategy(Strategy, 'github') {
-  constructor(private configService: ConfigService) {
+  constructor(private readonly configService: ConfigService) {
     super({
       clientID: configService.get<string>('GITHUB_CLIENT_ID'),
       clientSecret: configService.get<string>('GITHUB_CLIENT_SECRET'),
@@ -14,8 +16,17 @@ export class GitHubStrategy extends PassportStrategy(Strategy, 'github') {
     });
   }
 
-  async validate(accessToken: string, refreshToken: string, profile: any): Promise<any> {
+  async validate(
+    accessToken: string,
+    refreshToken: string,
+    profile: Profile
+  ): Promise<GitHubUser> {
     const { username, emails, photos } = profile;
+
+    if (!emails?.length || !photos?.length) {
+      throw new UnauthorizedException('Invalid GitHub profile data');
+    }
+
     return {
       username,
       email: emails[0].value,

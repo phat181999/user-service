@@ -7,10 +7,3 @@ export class LoginUserDto {
     @IsNotEmpty()
     email: string;
 }
-
-export class GetUserLogin {
-    access_token: string;
-    refreshToken: string;
-    refresh_expires_in: number;
-    expires_in: number;
-}

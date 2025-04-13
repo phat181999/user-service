@@ -1,6 +1,7 @@
-import { IsOptional, IsString, MaxLength, MinLength, Validate } from "class-validator";
+import { IsEnum, IsOptional, IsString, MaxLength, MinLength, Validate } from "class-validator";
 import { IsUnique } from "src/common/validators/isUniqueConstraint";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { UserRole } from "src/shared/interface";
 
 export class CreateUserDTO {
     @ApiProperty({
@@ -34,7 +35,8 @@ export class CreateUserDTO {
     })
     @IsString()
     @IsOptional()
-    role: string;
+    @IsEnum(UserRole)
+    role?: UserRole.USER;
 
     @ApiPropertyOptional({
         description: 'The image name of the user',
@@ -62,7 +64,7 @@ export class CreateUserDTO {
     deletedAt: Date;
 }
 
-export class createUserWithGoogle {
+export class createUserWithGoogleDto {
     @ApiProperty({
         description: 'The username of the user',
         maxLength: 100,
@@ -84,5 +86,47 @@ export class createUserWithGoogle {
         description: 'The role of the user',
     })
     @IsString()
-    image: string
+    image: string;
+
+    @ApiPropertyOptional({
+        description: 'The role of the user',
+    })
+    @IsString()
+    @IsOptional()
+    @IsEnum(UserRole)
+    role?: UserRole.USER;
+}
+
+
+export class createUserWithGithubDto {
+    @ApiProperty({
+        description: 'The username of the user',
+        maxLength: 100,
+    })
+    @IsString()
+    @MinLength(4)
+    @MaxLength(100)
+    userName: string;
+
+    @ApiProperty({
+        description: 'The email of the user',
+        uniqueItems: true,
+    })
+    @IsString()
+    @Validate(IsUnique, ['users', 'email'])
+    email: string;
+
+    @ApiPropertyOptional({
+        description: 'The role of the user',
+    })
+    @IsString()
+    image: string;
+
+    @ApiPropertyOptional({
+        description: 'The role of the user',
+    })
+    @IsString()
+    @IsOptional()
+    @IsEnum(UserRole)
+    role?: UserRole.USER;
 }
