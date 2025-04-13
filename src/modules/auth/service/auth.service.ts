@@ -1,159 +1,136 @@
-import { BadRequestException, Body, Inject, Injectable, InternalServerErrorException, Logger, Post, UnauthorizedException } from "@nestjs/common";
-import { GetUserLogin, LoginUserDto } from "src/modules/auth/dto/loginUser.dto";
-import { UserRepository } from "src/modules/user/repository/user.repository";
-import {HashPassword} from '../../../utils/hashPassword';
-import type { Cache } from 'cache-manager'
-import { JwtService } from "@nestjs/jwt";
-import { LoginGoogleDto } from "../dto/login-google.dto";
-import { CACHE_MANAGER } from "@nestjs/cache-manager";
+import { BadRequestException, Inject, Injectable, InternalServerErrorException, Logger, UnauthorizedException } from '@nestjs/common';
+import { LoginUserDto } from 'src/modules/auth/dto/loginUser.dto';
+import { UserRepository } from 'src/modules/user/repository/user.repository';
+import { HashPassword } from '../../../utils/hashPassword';
+import { Cache } from 'cache-manager';
+import { JwtService } from '@nestjs/jwt';
+import { LoginGoogleDto } from '../dto/login-google.dto';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { User } from 'src/shared/interface/user/user.interface';
+import { GetUserLogin } from 'src/shared/interface/auth/auth.intergace';
 
 @Injectable()
 export class AuthService {
-    private logger: Logger;
-    
+    private readonly logger: Logger;
+
     constructor(
         private readonly userRepository: UserRepository,
-        private readonly HashPassword: HashPassword,
-        private jwtService: JwtService,
-        @Inject(CACHE_MANAGER) private cacheManager: Cache,
+        private readonly hashPassword: HashPassword,
+        private readonly jwtService: JwtService,
+        @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
     ) {
         this.logger = new Logger(AuthService.name);
     }
-    
+
+    private logError(message: string, error?: any) {
+        this.logger.error(message, error);
+        throw new BadRequestException(message);
+    }
+
+    private async generateTokens(user: User): Promise<GetUserLogin> {
+        const payload = {
+          sub: user.userId,
+          username: user.userName,
+          email: user.email,
+          role: user.role,
+        };
+      
+        const accessToken = await this.jwtService.signAsync(payload, { expiresIn: '1h' });
+        const refreshToken = await this.jwtService.signAsync(payload, { expiresIn: '1d' });
+      
+        await this.cacheManager.set(`refresh_token_${user.userId}`, refreshToken, 86400); 
+      
+        return {
+          access_token: accessToken,
+          refresh_token: refreshToken,
+          expires_in: 3600, 
+          refresh_expires_in: 86400,
+        };
+    }
+
     async login(createUserDto: LoginUserDto): Promise<GetUserLogin> {
         try {
           const { email, password } = createUserDto;
           const user = await this.userRepository.findByEmail(email);
       
           if (!user) {
-            this.logger.error('User not found');
-            throw new UnauthorizedException();
+            this.logError('User not found');
+            throw new UnauthorizedException('User not found');
           }
       
-          const isPasswordMatch = await this.HashPassword.comparePassword(password, user.password);
+          const isPasswordMatch = await this.hashPassword.comparePassword(password, user.password);
           if (!isPasswordMatch) {
-            this.logger.error('Password does not match');
-            throw new UnauthorizedException('Unauthorized');
+            this.logError('Password does not match');
+            throw new UnauthorizedException('Password does not match');
           }
       
-          const payload = {
-            sub: user.userId,
-            username: user.userName,
-            email: user.email,
-            role: user.role,
-          };
-      
-          const refreshToken = await this.jwtService.signAsync(payload, { expiresIn: '1d' });
-      
-          await this.cacheManager.set(
-            `refresh_token_${user.userId}`,
-            refreshToken,
-            86400 // 1 day
-          );
-
-          return {
-            access_token: await this.jwtService.signAsync(payload, { expiresIn: '1h' }),
-            refreshToken,
-            refresh_expires_in: 86400,
-            expires_in: 3600,
-          };
+          return this.generateTokens(user);
         } catch (error) {
-          this.logger.error(`Error logging in user: ${error.message}`);
-          throw new Error(`Error logging in user: ${error.message}`);
+          this.logError('Error logging in user', error);
+          throw error;
         }
     }
-      
-    async refreshToken(userId: string, refreshToken: string): Promise<any> {
+
+    async refreshToken(userId: string, refreshToken: string): Promise<GetUserLogin> {
         try {
             const cachedToken = await this.cacheManager.get(`refresh_token_${userId}`);
             if (!cachedToken || cachedToken !== refreshToken) {
-                this.logger.error('Refresh token not found or does not match');
-                throw new UnauthorizedException('Unauthorized');
+                this.logError('Refresh token not found or does not match');
+                throw new UnauthorizedException('Refresh token not found or does not match');
             }
-            
+    
             const user = await this.userRepository.findById(userId);
             if (!user) {
-                this.logger.error('User not found');
-                throw new UnauthorizedException('Unauthorized');
+                this.logError('User not found');
+                throw new UnauthorizedException('User not found');
             }
-            
-            const payload = {
-                sub: user.userId,
-                username: user.userName,
-                email: user.email,
-                role: user.role,
-            };
-            
-            const newAccessToken = await this.jwtService.signAsync(payload, { expiresIn: '1h' });
-            
-            return {
-                access_token: newAccessToken,
-                refresh_token: refreshToken,
-                expires_in: 3600,
-            };
-        }
-        catch (error) {
-            this.logger.error(`Error refreshing token: ${error.message}`);
-            throw new BadRequestException(`Error refreshing token: ${error.message}`);
+    
+            return this.generateTokens(user);
+        } catch (error) {
+            this.logError('Error refreshing token', error);
+            throw new BadRequestException('Error refreshing token');
         }
     }
     
-    async loginWithGoogle(user: LoginGoogleDto):Promise<any> {
-        try{
-            const {email} = user;
-            const userExists = await this.userRepository.findByEmail(email);
-            if(!userExists){
+    async loginWithGoogle(user: LoginGoogleDto): Promise<GetUserLogin> {
+        try {
+            const { email } = user;
+            let existingUser = await this.userRepository.findByEmail(email);
+    
+            if (!existingUser) {
                 const newUser = await this.userRepository.createUserWithGoogle({
                     ...user,
                     userName: user.firstName,
-                    image: user.picture
+                    image: user.picture,
                 });
-                return {
-                    ...newUser,
-                    firstName: user.firstName,
-                    lastName: user.lastName,
-                    picture: user.picture,
-                    accessToken: '',
-                    refreshToken: ''
-                };
+                return { ...newUser, access_token: '', refresh_token: '', expires_in: 3600, refresh_expires_in: 86400 };
             }
-            return {
-                ...userExists,
-                accessToken: '',
-                refreshToken: ''
-            };
-        }catch(error){
-            this.logger.error(`Error logging in user: ${error.message}`);
-            throw new BadRequestException(`Error logging in user: ${error.message}`);
+    
+            return { ...existingUser, access_token: '', refresh_token: '', expires_in: 3600, refresh_expires_in: 86400 };
+        } catch (error) {
+            this.logError('Error logging in with Google', error);
+            throw new BadRequestException('Error logging in with Google');
         }
     }
-
-    async loginWithGithub(user: any):Promise<any> {
-        try{
-            const {email, username} = user;
-            const userExists = await this.userRepository.findByEmail(email);
-
-            if(!userExists){
+    
+    async loginWithGithub(user: any): Promise<GetUserLogin> {
+        try {
+            const { email, username } = user;
+            let existingUser = await this.userRepository.findByEmail(email);
+    
+            if (!existingUser) {
                 const newUser = await this.userRepository.createUserWithGithub({
                     ...user,
-                    userName: user.firstName,
-                    image: user.avatar
+                    userName: username,
+                    image: user.avatar,
                 });
-                return {
-                    newUser,
-
-                    accessToken: '',
-                    refreshToken: ''
-                };
+                return { ...newUser, access_token: '', refresh_token: '', expires_in: 3600, refresh_expires_in: 86400 };
             }
-            return {
-                ...userExists,
-                accessToken: '',
-                refreshToken: ''
-            };
-        }catch(error){
-            this.logger.error(`Error logging in user: ${error.message}`);
-            throw new BadRequestException(`Error logging in user: ${error.message}`);
+    
+            return { ...existingUser, access_token: '', refresh_token: '', expires_in: 3600, refresh_expires_in: 86400 };
+        } catch (error) {
+            this.logError('Error logging in with GitHub', error);
+            throw new BadRequestException('Error logging in with GitHub');
         }
     }
 
@@ -161,41 +138,42 @@ export class AuthService {
         try {
             const user = await this.userRepository.findByEmail(email);
             return !!user;
-        }catch (error) {
-            this.logger.error(`Error checking user exists: ${error.message}`);
-            throw new BadRequestException(`Error checking user exists: ${error.message}`);
+        } catch (error) {
+            this.logError('Error checking if user exists', error);
+            return false; 
         }
     }
 
     async logout(userId: string): Promise<{ message: string }> {
         try {
-          await this.cacheManager.del(`refresh_token_${userId}`);
-          return { message: 'Logged out successfully' };
+            await this.cacheManager.del(`refresh_token_${userId}`);
+            return { message: 'Logged out successfully' };
         } catch (err) {
-          throw new InternalServerErrorException('Logout failed');
+            throw new InternalServerErrorException('Logout failed');
         }
     }
 
+    // Placeholder methods to implement as needed
     async register() {
         return 'register';
     }
-    
+
     async forgotPassword() {
         return 'forgotPassword';
     }
-    
+
     async resetPassword() {
         return 'resetPassword';
     }
-    
+
     async changePassword() {
         return 'changePassword';
     }
-    
+
     async verifyEmail() {
         return 'verifyEmail';
     }
-    
+
     async resendEmailVerification() {
         return 'resendEmailVerification';
     }

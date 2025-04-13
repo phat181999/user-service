@@ -1,7 +1,8 @@
 import { BadRequestException, Body, Controller, Get, HttpCode, HttpStatus, Logger, Post, Req, Res, UseGuards, UsePipes, ValidationPipe } from "@nestjs/common";
-import { GetUserLogin, LoginUserDto } from "../dto/loginUser.dto";
+import { LoginUserDto } from "../dto/loginUser.dto";
 import { AuthService } from "../service/auth.service";
 import { AuthGuard } from "@nestjs/passport";
+import { GetUserLogin } from "src/shared/interface/auth/auth.intergace";
 
 @Controller('auth')
 @UsePipes(new ValidationPipe())
@@ -16,15 +17,15 @@ export class AuthController {
     @HttpCode(HttpStatus.OK)
     @Post('login')
     async login(@Body() loginUserDto: LoginUserDto): Promise<GetUserLogin> {
-        try {
-                this.logger.log(`Logging in User`);
-                const user = await this.AuthService.login(loginUserDto);
-                this.logger.log(`Logged in User`);
-                return user;
-            } catch (error) {
-                this.logger.error(`Error logging in user: ${error.message}`);
-                throw new Error(`Error logging in user: ${error.message}`);
-        }
+      try {
+        this.logger.log(`Logging in User`);
+        const user = await this.AuthService.login(loginUserDto);
+        this.logger.log(`Logged in User`);
+        return user;
+      } catch (error) {
+        this.logger.error(`Error logging in user: ${error.message}`);
+        throw new Error(`Error logging in user: ${error.message}`);
+      }
     }
 
     @Get('google')

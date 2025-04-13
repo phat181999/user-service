@@ -11,6 +11,7 @@ import { AuthModule } from '../auth/auth.module';
 import { AuthGuard } from 'src/common/guards/auth.guard';
 import { RoleGuard } from 'src/common/guards/role.guard';
 import { AccessControlService } from 'src/shared/service/accessControl.service';
+import { Utils } from 'src/utils/error-helper';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { AccessControlService } from 'src/shared/service/accessControl.service';
     AuthGuard,
     RoleGuard,
     AccessControlService,
+    Utils
   ], 
   exports: [
     UserService, 

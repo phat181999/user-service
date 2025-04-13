@@ -1,17 +1,16 @@
 import { Controller, Get, Post, Body, UsePipes, ValidationPipe, Param, Logger, Res, Put, Delete, HttpStatus, HttpCode, UseGuards, UseInterceptors, HttpException, UploadedFile } from '@nestjs/common';
 import { UserService } from '../service/user.service';
 import { CreateUserDTO } from '../dto/createUser.dto';
-import { GetUser } from '../dto/getUser.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { Roles } from '../../../common/decorators';
 import { RoleGuard, AuthGuard } from '../../../common/guards';
-import { UserRole } from '../../../shared/interface';
+import { CreateUser, GetUser, UpdateUser, UserRole } from '../../../shared/interface';
 import { CacheInterceptor } from '../../../common/interceptors';
 import { storage } from 'src/common/interceptors/cloudinary-storage';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import { UpdateUserDto } from '../dto/update-user.dto';
 
 @ApiTags('users')
-// @UseInterceptors(CacheInterceptor)
 @Controller('users')
 export class UserController {
   private logger: Logger;
@@ -29,7 +28,7 @@ export class UserController {
     @Body() createUserDto: CreateUserDTO,
     @UploadedFile() file: Express.Multer.File,
     @Res() res
-  ): Promise<CreateUserDTO | HttpException> {
+  ): Promise<CreateUser | HttpException> {
     try {
       this.logger.log(`Creating User`);
       if(file) {
@@ -114,14 +113,13 @@ export class UserController {
   }
 
   @HttpCode(HttpStatus.OK)
-  // @Roles('admin')
   @UseGuards(AuthGuard)
   @Put(':id')
   async updateUser(
     @Param('id') userId: string, 
-    @Body() createUserDto: Partial<CreateUserDTO>,
+    @Body() createUserDto: Partial<UpdateUserDto>,
     @Res() res
-  ): Promise<CreateUserDTO | HttpException> {
+  ): Promise<UpdateUser | HttpException> {
     try{
       this.logger.log(`Updating user`);
       const user = await this.userService.updateUser(userId, createUserDto);
