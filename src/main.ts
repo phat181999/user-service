@@ -13,7 +13,9 @@ async function bootstrap() {
       colors: true,
       prefix: 'NestJS',
     }),
+    cors: true
   });
+  app.enableCors();
   const config = new DocumentBuilder()
   .setTitle('User Service')
   .setDescription('The User Service API description')
@@ -25,7 +27,7 @@ async function bootstrap() {
   
   const microservice = await NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
     transport: Transport.TCP,
-    options: { host: 'localhost', port: 5000 }, // 👈 Đảm bảo đúng cổng
+    options: { host: 'localhost', port: 5000 },
   });
 
   microservice.listen();

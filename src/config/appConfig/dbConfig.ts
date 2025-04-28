@@ -13,6 +13,6 @@ export const typeOrmConfig = (configService: ConfigService): TypeOrmModuleOption
     entities: [join(__dirname, '../../modules/**/*.entity.{ts,js}')],
     synchronize: true, 
     ssl: {
-        rejectUnauthorized: false, // Supabase requires this for SSL connections
+        rejectUnauthorized: false,
     },
 });

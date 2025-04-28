@@ -9,10 +9,15 @@ import {
   import { JwtService } from '@nestjs/jwt';
   import { UserRole } from 'src/shared/interface/user/user.interface';
   import { ROLE_KEY } from 'src/common/decorators/role.decorator';
+import { ConfigService } from '@nestjs/config';
   
   @Injectable()
   export class RoleGuard implements CanActivate {
-    constructor(private reflector: Reflector, private jwtService: JwtService) {}
+    constructor(
+      private reflector: Reflector, 
+      private jwtService: JwtService,
+      private configService: ConfigService,
+    ) {}
   
     async canActivate(context: ExecutionContext): Promise<boolean> {
       const requiredRoles = this.reflector.getAllAndOverride<UserRole[]>(ROLE_KEY, [
@@ -30,7 +35,10 @@ import {
       const token = authHeader.split(' ')[1];
   
       try {
-        const decoded = this.jwtService.verify(token);
+        const decoded = await this.jwtService.verifyAsync(
+          token,
+          {secret: this.configService.get<string>('JWT_SECRET')}
+        );
         request.user = decoded; 
       } catch (error) {
         throw new UnauthorizedException('Invalid token');

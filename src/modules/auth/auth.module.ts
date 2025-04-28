@@ -9,6 +9,7 @@ import { GoogleStrategy } from "./strategies/google.strategy";
 import { GitHubStrategy } from "./strategies/github.strategy";
 import { CloudinaryProvider } from "src/config/cloudinary/cloudinary.provider";
 import { CacheModule } from "@nestjs/cache-manager";
+import { ConfigModule, ConfigService } from "@nestjs/config";
 
 @Module({
   imports: [
@@ -25,10 +26,16 @@ import { CacheModule } from "@nestjs/cache-manager";
       },
     }),
     forwardRef(() => UsersModule),
-    JwtModule.register({
+    JwtModule.registerAsync({
       global: true,
-      secret: "userService",
-      signOptions: { expiresIn: '60s' },
+      imports: [ConfigModule], // important to import ConfigModule
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        secret: configService.get<string>('JWT_SECRET'), // get secret from env
+        signOptions: {
+          expiresIn: '60s',
+        },
+      }),
     }),
   ],
   controllers: [AuthController],
