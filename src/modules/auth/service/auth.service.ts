@@ -45,6 +45,7 @@ export class AuthService {
           refresh_token: refreshToken,
           expires_in: 3600, 
           refresh_expires_in: 86400,
+          userStatus: true
         };
     }
 
@@ -103,10 +104,10 @@ export class AuthService {
                     userName: user.firstName,
                     image: user.picture,
                 });
-                return { ...newUser, access_token: '', refresh_token: '', expires_in: 3600, refresh_expires_in: 86400 };
+                return { ...newUser, access_token: '', refresh_token: '', expires_in: 3600, refresh_expires_in: 86400, userStatus: true };
             }
     
-            return { ...existingUser, access_token: '', refresh_token: '', expires_in: 3600, refresh_expires_in: 86400 };
+            return { ...existingUser, access_token: '', refresh_token: '', expires_in: 3600, refresh_expires_in: 86400, userStatus: true };
         } catch (error) {
             this.logError('Error logging in with Google', error);
             throw new BadRequestException('Error logging in with Google');
@@ -124,10 +125,10 @@ export class AuthService {
                     userName: username,
                     image: user.avatar,
                 });
-                return { ...newUser, access_token: '', refresh_token: '', expires_in: 3600, refresh_expires_in: 86400 };
+                return { ...newUser, access_token: '', refresh_token: '', expires_in: 3600, refresh_expires_in: 86400, userStatus: true };
             }
     
-            return { ...existingUser, access_token: '', refresh_token: '', expires_in: 3600, refresh_expires_in: 86400 };
+            return { ...existingUser, access_token: '', refresh_token: '', expires_in: 3600, refresh_expires_in: 86400, userStatus: true };
         } catch (error) {
             this.logError('Error logging in with GitHub', error);
             throw new BadRequestException('Error logging in with GitHub');

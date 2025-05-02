@@ -21,5 +21,5 @@ export interface GetUserLogin {
     refresh_token: string;  
     expires_in: number;      
     refresh_expires_in: number; 
+    userStatus: boolean;
 }
-  
