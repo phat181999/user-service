@@ -23,3 +23,12 @@ export interface GetUserLogin {
     refresh_expires_in: number; 
     userStatus: boolean;
 }
+
+export enum UserStatus {
+    ONLINE='online',
+    OFFLINE='offline',
+    AWAY='away',
+    BUSY='busy',
+    INVISIBLE='invisible',
+    DO_NOT_DISTURB='do_not_disturb',
+}

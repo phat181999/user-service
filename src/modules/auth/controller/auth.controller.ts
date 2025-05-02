@@ -16,7 +16,7 @@ export class AuthController {
 
     @HttpCode(HttpStatus.OK)
     @Post('login')
-    async login(@Body() loginUserDto: LoginUserDto): Promise<GetUserLogin> {
+    async login(@Body() loginUserDto: LoginUserDto): Promise<GetUserLogin | undefined> {
       try {
         this.logger.log(`Logging in User`);
         const user = await this.AuthService.login(loginUserDto);

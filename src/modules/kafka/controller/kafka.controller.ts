@@ -3,7 +3,6 @@ import { ClientKafka, EventPattern, MessagePattern, Payload } from "@nestjs/micr
 import { KafkaProducerService } from "../service/kafka.service";
 import { VerifyUserMessage } from "../dto/verify-user.dto";
 import { UserService } from "src/modules/user/service/user.service";
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 
 @Controller()
@@ -12,7 +11,6 @@ export class KafkaController  {
     constructor(
         private kafkaService: KafkaProducerService,
         private readonly userService: UserService,
-        @Inject(CACHE_MANAGER) private cacheManager: Cache,
         @Inject('KAFKA_SERVICE') private readonly kafkaClient: ClientKafka,
     ) {
         this.logger = new Logger(KafkaController.name);
@@ -65,13 +63,6 @@ export class KafkaController  {
         // Check user in database
         const userExists = await this.userService.getUserById(data.receiver);
         
-        // Cache the result
-        await this.cacheManager.set(
-          `user:${data.receiver}`, 
-          userExists ? 'exists' : 'not-exists',
-          3600 // Cache for 1 hour
-        );
-  
         // Send verification response
         await this.kafkaClient.emit('user-verified', {
           receiver: data.receiver,

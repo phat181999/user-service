@@ -5,9 +5,9 @@ import { HashPassword } from '../../../utils/hashPassword';
 import { Cache } from 'cache-manager';
 import { JwtService } from '@nestjs/jwt';
 import { LoginGoogleDto } from '../dto/login-google.dto';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { User } from 'src/shared/interface/user/user.interface';
-import { GetUserLogin } from 'src/shared/interface/auth/auth.intergace';
+import { GetUserLogin, UserStatus } from 'src/shared/interface/auth/auth.intergace';
+import { RedisService } from 'src/modules/redis/redis.service';
 
 @Injectable()
 export class AuthService {
@@ -17,7 +17,7 @@ export class AuthService {
         private readonly userRepository: UserRepository,
         private readonly hashPassword: HashPassword,
         private readonly jwtService: JwtService,
-        @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
+        private readonly redisService: RedisService
     ) {
         this.logger = new Logger(AuthService.name);
     }
@@ -27,7 +27,7 @@ export class AuthService {
         throw new BadRequestException(message);
     }
 
-    private async generateTokens(user: User): Promise<GetUserLogin> {
+    private async generateTokens(user: User): Promise<GetUserLogin | undefined> {
         const payload = {
           sub: user.userId,
           username: user.userName,
@@ -38,8 +38,7 @@ export class AuthService {
         const accessToken = await this.jwtService.signAsync(payload, { expiresIn: '1h' });
         const refreshToken = await this.jwtService.signAsync(payload, { expiresIn: '1d' });
       
-        await this.cacheManager.set(`refresh_token_${user.userId}`, refreshToken, 86400); 
-      
+        await this.redisService.set(user.userId, UserStatus.ONLINE, 86400);
         return {
           access_token: accessToken,
           refresh_token: refreshToken,
@@ -49,7 +48,7 @@ export class AuthService {
         };
     }
 
-    async login(createUserDto: LoginUserDto): Promise<GetUserLogin> {
+    async login(createUserDto: LoginUserDto): Promise<GetUserLogin | undefined> {
         try {
           const { email, password } = createUserDto;
           const user = await this.userRepository.findByEmail(email);
@@ -72,14 +71,8 @@ export class AuthService {
         }
     }
 
-    async refreshToken(userId: string, refreshToken: string): Promise<GetUserLogin> {
+    async refreshToken(userId: string, refreshToken: string): Promise<GetUserLogin | undefined> {
         try {
-            const cachedToken = await this.cacheManager.get(`refresh_token_${userId}`);
-            if (!cachedToken || cachedToken !== refreshToken) {
-                this.logError('Refresh token not found or does not match');
-                throw new UnauthorizedException('Refresh token not found or does not match');
-            }
-    
             const user = await this.userRepository.findById(userId);
             if (!user) {
                 this.logError('User not found');
@@ -93,7 +86,7 @@ export class AuthService {
         }
     }
     
-    async loginWithGoogle(user: LoginGoogleDto): Promise<GetUserLogin> {
+    async loginWithGoogle(user: LoginGoogleDto): Promise<GetUserLogin | undefined> {
         try {
             const { email } = user;
             let existingUser = await this.userRepository.findByEmail(email);
@@ -114,7 +107,7 @@ export class AuthService {
         }
     }
     
-    async loginWithGithub(user: any): Promise<GetUserLogin> {
+    async loginWithGithub(user: any): Promise<GetUserLogin | undefined> {
         try {
             const { email, username } = user;
             let existingUser = await this.userRepository.findByEmail(email);
@@ -147,7 +140,7 @@ export class AuthService {
 
     async logout(userId: string): Promise<{ message: string }> {
         try {
-            await this.cacheManager.del(`refresh_token_${userId}`);
+            await this.redisService.del(userId);
             return { message: 'Logged out successfully' };
         } catch (err) {
             throw new InternalServerErrorException('Logout failed');
