@@ -23,23 +23,28 @@ export class RedisService implements OnModuleInit {
   }
 
   async get(key: string): Promise<string | null> {
-    return this.redisClient.get(key);
+    this.logger.log(`Getting value for key ${key}`);
+    return await this.redisClient.get(key);
   }
 
   async set(key: string, value: UserStatus, ttl?: number): Promise<void> {
     if (ttl) {
       await this.redisClient.set(key, value, 'EX', ttl);
+      this.logger.log(`Set key ${key} with status ${value} and TTL ${ttl}`);
       return;
     }
+    this.logger.log(`Set key ${key} with status ${value}`);
     await this.redisClient.set(key, value);
     return
   }
 
   async del(key: string): Promise<number | undefined> {
-    return this.redisClient.del(key);
+    this.logger.log(`Deleting key ${key}`);
+    return await this.redisClient.del(key);
   }
 
   async exists(key: string): Promise<number | undefined> {
-    return this.redisClient.exists(key);
+    this.logger.log(`Checking existence of key ${key}`);
+    return await this.redisClient.exists(key);
   }
 }
