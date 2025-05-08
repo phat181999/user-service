@@ -15,23 +15,20 @@ import { Utils } from 'src/utils/error-helper';
 
 @Module({
   imports: [
-    forwardRef(() => AuthModule), 
+    forwardRef(() => AuthModule),
     TypeOrmModule.forFeature([UserEntity]),
   ],
   controllers: [UserController],
   providers: [
-    UserService, 
-    UserRepository, 
-    IsUnique, 
+    UserService,
+    UserRepository,
+    IsUnique,
     HashPassword,
     AuthGuard,
     RoleGuard,
     AccessControlService,
-    Utils
-  ], 
-  exports: [
-    UserService, 
-    UserRepository, 
-  ], 
+    Utils,
+  ],
+  exports: [UserService, UserRepository],
 })
 export class UsersModule {}

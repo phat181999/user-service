@@ -13,7 +13,7 @@ export class CloudinaryService implements OnModuleInit {
       this.logger.log('✅ Cloudinary connection established successfully!');
     } catch (error) {
       this.logger.error('❌ Failed to connect to Cloudinary:', error.message);
-      process.exit(1); 
+      process.exit(1);
     }
   }
 }

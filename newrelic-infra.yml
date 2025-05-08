@@ -1,0 +1,3 @@
+license_key: e61fa90f0861aacf0f1fed0ae47423adFFFFNRAL
+log_file: /var/log/newrelic-infra.log
+verbose: 0

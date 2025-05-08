@@ -2,9 +2,13 @@ import { Injectable, Logger } from '@nestjs/common';
 import { UserRepository } from '../repository/user.repository';
 import { HashPassword } from '../../../utils/hashPassword';
 import { CreateUserDTO, createUserWithGoogleDto } from '../dto/createUser.dto';
-import { CreateUserGoogle, GetUser, UpdateUser, UserRole } from 'src/shared/interface';
+import {
+  CreateUserGoogle,
+  GetUser,
+  UpdateUser,
+  UserRole,
+} from '../../../shared/interface/index';
 import { UpdateUserDto } from '../dto/update-user.dto';
-import {  Utils } from 'src/utils/error-helper';
 
 @Injectable()
 export class UserService {
@@ -13,48 +17,46 @@ export class UserService {
   constructor(
     private readonly userRepository: UserRepository,
     private readonly hashPassword: HashPassword,
-    private readonly utils: Utils,
   ) {}
 
-
-  async createUser(createUserDto: CreateUserDTO): Promise<CreateUserDTO> {
+  async createUser(
+    createUserDto: CreateUserDTO,
+  ): Promise<CreateUserDTO | null> {
     try {
       const { userName, email, password } = createUserDto;
-
-      this.utils.throwIfMissing('Username', userName);
-      this.utils.throwIfMissing('Email', email);
-      this.utils.throwIfMissing('Password', password);
-
       const hashedPassword = await this.hashPassword.hashPassword(password);
       const userToCreate = { ...createUserDto, password: hashedPassword };
       const createdUser = await this.userRepository.createUser(userToCreate);
 
       return { ...createdUser, role: UserRole.USER };
     } catch (error) {
-      this.utils.handleError('creating user', error);
+      this.logger.error('Error creating user', error);
+      throw new Error('Error creating user');
     }
   }
 
-  async createUserWithGoogle(createUserDto: createUserWithGoogleDto): Promise<CreateUserGoogle> {
+  async createUserWithGoogle(
+    createUserDto: createUserWithGoogleDto,
+  ): Promise<CreateUserGoogle | null> {
     try {
-      this.utils.throwIfMissing('Email', createUserDto.email);
       return await this.userRepository.createUserWithGoogle(createUserDto);
     } catch (error) {
-      this.utils.handleError('creating user with Google', error);
+      this.logger.error('Error creating user with Google', error);
+      throw new Error('Error creating user with Google');
     }
   }
 
-  async getUsers(): Promise<GetUser[]> {
+  async getUsers(): Promise<GetUser[] | null> {
     try {
       return await this.userRepository.findAll();
     } catch (error) {
-      this.utils.handleError('getting all users', error);
+      this.logger.error('Error getting all users', error);
+      throw new Error('Error getting all users');
     }
   }
 
   async getUserById(userId: string): Promise<GetUser | null> {
     try {
-      this.utils.throwIfMissing('User ID', userId);
       const user = await this.userRepository.findById(userId);
       if (!user) {
         this.logger.error('User not found');
@@ -62,29 +64,37 @@ export class UserService {
       }
       return user;
     } catch (error) {
-      this.utils.handleError('getting user by ID', error);
+      this.logger.error('Error getting user by ID', error);
+      throw new Error('Error getting user by ID');
     }
   }
 
   async getUserByEmail(email: string): Promise<GetUser | null> {
     try {
-      this.utils.throwIfMissing('Email', email);
       return await this.userRepository.findByEmail(email);
     } catch (error) {
-      this.utils.handleError('getting user by email', error);
+      this.logger.error('Error getting user by email', error);
+      throw new Error('Error getting user by email');
     }
   }
 
-  async updateUser(userId: string, updateData: Partial<UpdateUserDto>): Promise<UpdateUser> {
+  async updateUser(
+    userId: string,
+    updateData: Partial<UpdateUserDto>,
+  ): Promise<UpdateUser | null> {
     try {
-      const updatedUser = await this.userRepository.updateUserById(userId, updateData);
+      const updatedUser = await this.userRepository.updateUserById(
+        userId,
+        updateData,
+      );
       if (!updatedUser) {
         this.logger.error('User not found');
         throw new Error('User not found');
       }
       return updatedUser;
     } catch (error) {
-      this.utils.handleError('updating user', error);
+      this.logger.error('Error updating user', error);
+      throw new Error('Error updating user');
     }
   }
 
@@ -98,7 +108,8 @@ export class UserService {
       await this.userRepository.deleteUserById(userId);
       return true;
     } catch (error) {
-      this.utils.handleError('deleting user', error);
+      this.logger.error('Error deleting user', error);
+      throw new Error('Error deleting user');
     }
   }
 }

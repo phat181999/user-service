@@ -13,22 +13,23 @@ async function bootstrap() {
       colors: true,
       prefix: 'NestJS',
     }),
-    cors: true
+    cors: true,
   });
   app.enableCors();
   const config = new DocumentBuilder()
-  .setTitle('User Service')
-  .setDescription('The User Service API description')
-  .setVersion('1.0')
-  .addTag('user')
-  .build();
+    .setTitle('User Service')
+    .setDescription('The User Service API description')
+    .setVersion('1.0')
+    .addTag('user')
+    .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/documentation', app, documentFactory);
-  
-  const microservice = await NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
-    transport: Transport.TCP,
-    options: { host: 'localhost', port: 5000 },
-  });
+
+  const microservice =
+    await NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
+      transport: Transport.TCP,
+      options: { host: 'localhost', port: 5000 },
+    });
 
   microservice.listen();
 
