@@ -19,7 +19,6 @@ export const storage = new CloudinaryStorage({
 
     const fileMapping = fileTypeMappings[fileType] || fileTypeMappings.image;
 
-
     return {
       folder: 'chat-app',
       resource_type: fileMapping.resource_type,

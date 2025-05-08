@@ -1,5 +1,5 @@
-import {Injectable} from "@nestjs/common";
-import { UserRole } from "../interface";
+import { Injectable } from '@nestjs/common';
+import { UserRole } from '../interface';
 
 interface IsAuthorizedParams {
   currentRole: UserRole;
@@ -12,7 +12,7 @@ export class AccessControlService {
   private priority: number = 1;
 
   constructor() {
-    this.buildRoles([ UserRole.USER, UserRole.ADMIN]);
+    this.buildRoles([UserRole.USER, UserRole.ADMIN]);
     // this.buildRoles([Role.MODERATOR, Role.ADMIN]);
   }
 
@@ -27,7 +27,7 @@ export class AccessControlService {
     this.hierarchies.push(hierarchy);
   }
 
-  public isAuthorized({currentRole, requiredRole}: IsAuthorizedParams) {
+  public isAuthorized({ currentRole, requiredRole }: IsAuthorizedParams) {
     for (const hierarchy of this.hierarchies) {
       const priority = hierarchy.get(currentRole);
       const requiredPriority = hierarchy.get(requiredRole);

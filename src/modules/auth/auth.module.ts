@@ -1,14 +1,14 @@
-import { Module, forwardRef } from "@nestjs/common";
-import { AuthController } from "./controller/auth.controller";
-import { AuthService } from "./service/auth.service";
-import { HashPassword } from "src/utils/hashPassword";
-import { UsersModule } from "../user/user.module";
-import { JwtModule } from "@nestjs/jwt";
-import { GoogleStrategy } from "./strategies/google.strategy";
-import { GitHubStrategy } from "./strategies/github.strategy";
-import { CloudinaryProvider } from "src/config/cloudinary/cloudinary.provider";
-import { ConfigModule, ConfigService } from "@nestjs/config";
-import { RedisModule } from "../redis/redis.module";
+import { Module, forwardRef } from '@nestjs/common';
+import { AuthController } from './controller/auth.controller';
+import { AuthService } from './service/auth.service';
+import { HashPassword } from 'src/utils/hashPassword';
+import { UsersModule } from '../user/user.module';
+import { JwtModule } from '@nestjs/jwt';
+import { GoogleStrategy } from './strategies/google.strategy';
+import { GitHubStrategy } from './strategies/github.strategy';
+import { CloudinaryProvider } from 'src/config/cloudinary/cloudinary.provider';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { RedisModule } from '../redis/redis.module';
 
 @Module({
   imports: [
@@ -16,7 +16,7 @@ import { RedisModule } from "../redis/redis.module";
     forwardRef(() => RedisModule),
     JwtModule.registerAsync({
       global: true,
-      imports: [ConfigModule], 
+      imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_SECRET'),
@@ -32,7 +32,7 @@ import { RedisModule } from "../redis/redis.module";
     HashPassword,
     GoogleStrategy,
     GitHubStrategy,
-    CloudinaryProvider
+    CloudinaryProvider,
   ],
   exports: [AuthService],
 })

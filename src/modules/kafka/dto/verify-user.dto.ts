@@ -1,4 +1,3 @@
-
 export class VerifyUserMessage {
-    receiver: string;
+  receiver: string;
 }

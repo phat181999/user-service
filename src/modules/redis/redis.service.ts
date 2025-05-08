@@ -13,8 +13,11 @@ export class RedisService implements OnModuleInit {
       await this.redisClient.ping();
       this.logger.log('✅ Redis ping successful, connection verified.');
     } catch (error) {
-      this.logger.error('❌ Redis connection failed on startup:', error.message);
-      process.exit(1); 
+      this.logger.error(
+        '❌ Redis connection failed on startup:',
+        error.message,
+      );
+      process.exit(1);
     }
   }
 
@@ -35,7 +38,7 @@ export class RedisService implements OnModuleInit {
     }
     this.logger.log(`Set key ${key} with status ${value}`);
     await this.redisClient.set(key, value);
-    return
+    return;
   }
 
   async del(key: string): Promise<number | undefined> {

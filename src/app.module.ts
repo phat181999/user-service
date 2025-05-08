@@ -18,12 +18,13 @@ import { RedisModule } from './modules/redis/redis.module';
     CloudinaryModule,
     ConfigModule.forRoot({
       envFilePath: '.env.development.local',
-      isGlobal: true,  
+      isGlobal: true,
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => typeOrmConfig(configService),
+      useFactory: (configService: ConfigService) =>
+        typeOrmConfig(configService),
     }),
     UsersModule,
     AuthModule,
@@ -31,7 +32,7 @@ import { RedisModule } from './modules/redis/redis.module';
     TcpModule,
   ],
   controllers: [AppController],
-  providers: [AppService, ],
-  exports:[]
+  providers: [AppService],
+  exports: [],
 })
 export class AppModule {}
