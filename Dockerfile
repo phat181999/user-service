@@ -14,6 +14,8 @@ RUN npm install
 COPY . .
 
 # Build project
+RUN npm run test
+
 RUN npm run build
 
 # Expose port
