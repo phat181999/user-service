@@ -3,24 +3,23 @@ name: Build and Push Docker Image to Docker Hub
 on:
   push:
     branches:
-      - main  # Trigger the action on push to the main branch
+      - main 
 
 jobs:
-  build:
-    runs-on: ubuntu-latest  # Use the latest version of Ubuntu for the runner
-
+  runs-on: ubuntu-latest
+  checkout-code:
     steps:
-    # Step 1: Checkout the repository
     - name: Checkout code
-      uses: actions/checkout@v3  # Use the latest version of actions/checkout
-
-    # Step 2: Log in to Docker Hub
+      uses: actions/checkout@v3 
+  login-docker-hub:
+    steps:
     - name: Log in to Docker Hub
       uses: docker/login-action@v2
       with:
-        username: ${{ secrets.DOCKER_USERNAME }}  # Docker Hub username from GitHub secrets
-        password: ${{ secrets.DOCKER_PASSWORD }}  # Docker Hub password from GitHub secrets
-
+        username: ${{ secrets.DOCKER_USERNAME }}  
+        password: ${{ secrets.DOCKER_PASSWORD }}  
+  build-and-push:
+    steps:
     # Step 3: Set up Docker Buildx (this is useful for building multi-platform images)
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2  # Use the latest version of setup-buildx-action
@@ -38,7 +37,7 @@ jobs:
     - name: Build Docker image
       run: |
         docker build -t ${{ secrets.DOCKER_USERNAME }}/user-service:${{ github.sha }} .  # Replace 'my-app' with your app's name
-        docker tag ${{ secrets.DOCKER_USERNAME }}user-service:${{ github.sha }} ${{ secrets.DOCKER_USERNAME }}user-service:latest
+        docker tag ${{ secrets.DOCKER_USERNAME }}/user-service:${{ github.sha }} ${{ secrets.DOCKER_USERNAME }}/user-service:latest
 
     # Step 6: Push Docker image to Docker Hub
     - name: Push Docker image to Docker Hub

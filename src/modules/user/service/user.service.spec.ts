@@ -31,9 +31,23 @@ describe('UserServiceTest', () => {
   describe('getUsers', () => {
     it('should return a list of users when repository call is successful', async () => {
       const result = await userService.getUsers();
-
       expect(result).toEqual([mockUser]);
       expect(userRepository.findAll).toHaveBeenCalledTimes(1);
     });
+
+    it('should throw an error when repository call fails', async () => {
+      jest.spyOn(userRepository, 'findAll').mockRejectedValue(new Error('Database error'));
+
+      await expect(userService.getUsers()).rejects.toThrow('Database error');
+      expect(userRepository.findAll).toHaveBeenCalledTimes(1);
+    });
+    it('should return an empty array when no users are found', async () => {
+      jest.spyOn(userRepository, 'findAll').mockResolvedValue([]);
+
+      const result = await userService.getUsers();
+      expect(result).toEqual([]);
+      expect(userRepository.findAll).toHaveBeenCalledTimes(1);
+    }
+    );
   });
 });
